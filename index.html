@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunger Creative v2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;1,300&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --hunger-primary: #15803d;
+            --hunger-light: #dcfce7;
+            --hunger-mid: #bbf7d0;
+            --hunger-accent: #4ade80;
+            --stress-primary: #c2410c;
+            --stress-light: #fff7ed;
+            --stress-mid: #fed7aa;
+            --stress-accent: #fb923c;
+            --boredom-primary: #4338ca;
+            --boredom-light: #eef2ff;
+            --boredom-mid: #c7d2fe;
+            --boredom-accent: #818cf8;
+            --mode-primary: #15803d;
+            --mode-light: #dcfce7;
+            --mode-mid: #bbf7d0;
+            --mode-accent: #4ade80;
+            --text-dark: #1a1a2e;
+            --text-mid: #4a4a6a;
+            --text-light: #8888aa;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #fafaf8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            overflow-x: hidden;
+        }
+
+        /* ─── Noise texture overlay ─── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 0;
+        }
+
+        .app-shell {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 440px;
+        }
+
+        /* ─── Logo strip ─── */
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo-title {
+            font-family: 'Fraunces', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--text-dark);
+            line-height: 1;
+        }
+        .logo-title span {
+            font-style: italic;
+            font-weight: 300;
+        }
+        .logo-sub {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        /* ─── Mode selector ─── */
+        #screen-select { animation: fadeIn 0.4s ease; }
+
+        .select-label {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-mid);
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .mode-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .mode-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.1rem 1.4rem;
+            border-radius: 18px;
+            border: 2px solid transparent;
+            background: white;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .mode-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        .mode-card:active { transform: scale(0.97); }
+
+        .mode-card.hunger  { border-color: var(--hunger-mid);  }
+        .mode-card.stress  { border-color: var(--stress-mid);  }
+        .mode-card.boredom { border-color: var(--boredom-mid); }
+
+        .mode-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .mode-card.hunger  .mode-icon { background: var(--hunger-light);  }
+        .mode-card.stress  .mode-icon { background: var(--stress-light);  }
+        .mode-card.boredom .mode-icon { background: var(--boredom-light); }
+
+        .mode-text-wrap {}
+        .mode-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .mode-desc {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            margin-top: 0.15rem;
+            line-height: 1.4;
+        }
+
+        /* ─── Idea screen ─── */
+        #screen-idea { display: none; animation: fadeIn 0.4s ease; }
+        #screen-idea.active { display: block; }
+
+        .mode-badge-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+        }
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.9rem;
+            border-radius: 100px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .btn-back {
+            background: none; border: none; cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            display: flex; align-items: center; gap: 0.3rem;
+            transition: color 0.2s;
+        }
+        .btn-back:hover { color: var(--text-dark); }
+
+        .idea-panel {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem 1.8rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            border: 2px solid var(--mode-mid);
+            min-height: 280px;
+            position: relative;
+            overflow: hidden;
+        }
+        .idea-panel::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: var(--mode-light);
+            opacity: 0.7;
+        }
+
+        .idea-tag {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 100px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            background: var(--mode-light);
+            color: var(--mode-primary);
+            margin-bottom: 1rem;
+        }
+
+        .idea-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.35;
+            margin-bottom: 1.1rem;
+            position: relative; z-index: 1;
+        }
+
+        .idea-body {
+            font-size: 0.82rem;
+            color: var(--text-mid);
+            line-height: 1.85;
+        }
+        .idea-body strong { color: var(--mode-primary); font-weight: 700; }
+
+        .idea-step {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.8rem;
+        }
+        .step-num {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: var(--mode-light);
+            color: var(--mode-primary);
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        /* ─── Buttons ─── */
+        .btn-generate {
+            width: 100%;
+            margin-top: 1.2rem;
+            padding: 1rem;
+            border: none;
+            border-radius: 16px;
+            background: var(--mode-primary);
+            color: white;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s, background 0.3s;
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--mode-primary) 30%, transparent);
+        }
+        .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--mode-primary) 35%, transparent); }
+        .btn-generate:active { transform: scale(0.96); }
+
+        .tip-box {
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            background: var(--mode-light);
+            border-radius: 12px;
+            font-size: 0.72rem;
+            color: var(--mode-primary);
+            line-height: 1.6;
+            display: none;
+        }
+        .tip-box.visible { display: block; animation: fadeIn 0.3s ease; }
+        .tip-box strong { font-weight: 700; }
+
+        /* ─── Copy area ─── */
+        .copy-area {
+            margin-top: 1rem;
+            border: 1.5px dashed var(--mode-mid);
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+            background: var(--mode-light);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .copy-area.visible { display: block; }
+
+        .copy-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .copy-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--mode-primary);
+            display: flex; align-items: center; gap: 0.3rem;
+        }
+        .char-count {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--mode-primary);
+            background: white;
+            border-radius: 100px;
+            padding: 0.15rem 0.55rem;
+            border: 1.5px solid var(--mode-mid);
+        }
+        .char-count.over { color: #dc2626; border-color: #fca5a5; background: #fef2f2; }
+
+        .copy-preview {
+            font-size: 0.75rem;
+            color: var(--text-mid);
+            line-height: 1.65;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 0.7rem;
+        }
+
+        .btn-copy {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            border: 1.5px solid var(--mode-mid);
+            color: var(--mode-primary);
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+            transition: all 0.2s;
+        }
+        .btn-copy:hover { background: var(--mode-primary); color: white; border-color: var(--mode-primary); }
+        .btn-copy:active { transform: scale(0.97); }
+        .btn-copy.copied { background: var(--mode-primary); color: white; border-color: var(--mode-primary); }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: #1a1a2e;
+            color: white;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.6rem 1.4rem;
+            border-radius: 100px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            white-space: nowrap;
+            z-index: 100;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ─── Utility ─── */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideCard { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+        .slide-card { animation: slideCard 0.35s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+        /* ─── Color theming by mode ─── */
+        body[data-mode="hunger"]  { --mode-primary: var(--hunger-primary);  --mode-light: var(--hunger-light);  --mode-mid: var(--hunger-mid);  --mode-accent: var(--hunger-accent);  }
+        body[data-mode="stress"]  { --mode-primary: var(--stress-primary);  --mode-light: var(--stress-light);  --mode-mid: var(--stress-mid);  --mode-accent: var(--stress-accent);  }
+        body[data-mode="boredom"] { --mode-primary: var(--boredom-primary); --mode-light: var(--boredom-light); --mode-mid: var(--boredom-mid); --mode-accent: var(--boredom-accent); }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+
+    <div class="logo">
+        <div class="logo-title">Hunger <span>Creative</span></div>
+        <div class="logo-sub">食欲を、エネルギーに変える</div>
+    </div>
+
+    <!-- ① モード選択画面 -->
+    <div id="screen-select">
+        <p class="select-label">今の状態に近いものを選んでください</p>
+        <div class="mode-grid">
+            <div class="mode-card hunger" onclick="selectMode('hunger')">
+                <div class="mode-icon">🌿</div>
+                <div class="mode-text-wrap">
+                    <div class="mode-name">お腹が空いている</div>
+                    <div class="mode-desc">生理的な空腹・食事前・断食中</div>
+                </div>
+            </div>
+            <div class="mode-card stress" onclick="selectMode('stress')">
+                <div class="mode-icon">🔥</div>
+                <div class="mode-text-wrap">
+                    <div class="mode-name">ストレスで食べたい</div>
+                    <div class="mode-desc">感情的・衝動的・イライラ・もやもや</div>
+                </div>
+            </div>
+            <div class="mode-card boredom" onclick="selectMode('boredom')">
+                <div class="mode-icon">💤</div>
+                <div class="mode-text-wrap">
+                    <div class="mode-name">なんとなく口が寂しい</div>
+                    <div class="mode-desc">暇つぶし・習慣・手持ち無沙汰</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ② アイデア表示画面 -->
+    <div id="screen-idea">
+        <div class="mode-badge-bar">
+            <div class="mode-badge" id="badge"></div>
+            <button class="btn-back" onclick="goBack()">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6L8 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                モード選択に戻る
+            </button>
+        </div>
+
+        <div class="idea-panel" id="idea-panel">
+            <div class="idea-tag" id="idea-tag"></div>
+            <h2 class="idea-title" id="idea-title"></h2>
+            <div class="idea-body" id="idea-body"></div>
+        </div>
+
+        <!-- X投稿用コピーエリア -->
+        <div class="copy-area" id="copy-area">
+            <div class="copy-header">
+                <div class="copy-label">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    X（旧Twitter）用テキスト
+                </div>
+                <div class="char-count" id="char-count">0 / 140</div>
+            </div>
+            <div class="copy-preview" id="copy-preview"></div>
+            <button class="btn-copy" id="btn-copy" onclick="copyTweet()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <span id="copy-btn-label">テキストをコピー</span>
+            </button>
+        </div>
+
+        <button class="btn-generate" onclick="nextIdea()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+            別のアイデアを見る
+        </button>
+
+        <div class="tip-box" id="tip-box"></div>
+    </div>
+
+</div>
+
+<!-- トースト通知 -->
+<div class="toast" id="toast">✓ コピーしました！Xに貼り付けてください</div>
+
+<script>
+const IDEAS = {
+    hunger: {
+        badge: { emoji: '🌿', label: '空腹モード', style: 'color: #15803d; background: #dcfce7;' },
+        tip: '💡 空腹は「体内工事中」のサインです。30分だけ別のことに意識を向けてみると、自然と収まることが多いです。',
+        items: [
+            {
+                tag: 'オートファジー',
+                title: '体内の大規模リノベをイメージする',
+                steps: [
+                    '古くなったタンパク質が今この瞬間、細胞の燃料として再利用されています。',
+                    'これは「体が消えているサイン」ではなく、<strong>細胞が若返っている通知</strong>です。',
+                    'お腹の感覚を「鳴き声」ではなく「工事の音」として聞いてみてください。'
+                ]
+            },
+            {
+                tag: '五感の研ぎ澄まし',
+                title: '嗅覚テイスティングを実施する',
+                steps: [
+                    '空腹時は嗅覚と味覚が鋭敏になります。これは生存本能のピーク状態です。',
+                    '遠くのコーヒーや食事の香りを、あえて深く嗅いで<strong>香りの層を分解</strong>してみましょう。',
+                    '次の食事を音・温度・食感まで頭の中で完璧にシミュレートします。'
+                ]
+            },
+            {
+                tag: '思考の透明度',
+                title: '重いタスクを今すぐ攻略する',
+                steps: [
+                    '消化にエネルギーを奪われていないため、今が<strong>脳のゴールデンタイム</strong>です。',
+                    '先延ばしにしていたクリエイティブな仕事や思考系の作業に今すぐ着手しましょう。',
+                    '「空腹が冴えをもたらしている」というメタ認知が作業効率をさらに高めます。'
+                ]
+            },
+            {
+                tag: '内臓洗車',
+                title: 'こだわりの水分で浄化儀式',
+                steps: [
+                    'ただの水分補給を、体内を清める<strong>丁寧な儀式</strong>に昇格させます。',
+                    '常温水・炭酸水・香りのよいお茶など、テクスチャーを意識しながらゆっくり飲む。',
+                    '胃壁を通り抜けていく清涼感に集中すると、空腹感が遠のいていきます。'
+                ]
+            },
+            {
+                tag: '脂肪燃焼',
+                title: '自前の燃料で動いている感覚を楽しむ',
+                steps: [
+                    '軽く体を動かしてみましょう。今使われているのは<strong>自分自身の蓄積エネルギー</strong>です。',
+                    '「外からの燃料なしで動けている」という自給自足モードを意識してください。',
+                    '5分後、空腹感が心地よい安定感に変換されていることに気づくはずです。'
+                ]
+            },
+            {
+                tag: '血糖値の安定',
+                title: '空腹が血糖値を「整えている」と知る',
+                steps: [
+                    '食後に血糖値が急上昇・急降下するのが太りやすさの本質です。',
+                    '今は血糖値が安定した低水準にあり、<strong>インスリンが分泌されていない理想の状態</strong>です。',
+                    'これを「我慢」ではなく「体が正常に働いている証拠」と捉え直してください。'
+                ]
+            },
+            {
+                tag: 'グレリン活用',
+                title: '空腹ホルモンを「面白い実験」として観察する',
+                steps: [
+                    'グレリンは約90分周期で増減します。今感じている空腹感は<strong>90分後には自然に下がります</strong>。',
+                    'スマホのメモに「空腹度：7/10、時刻：〇〇時」と記録してみましょう。',
+                    '次のピークと谷を予測することで、空腹感が「体のリズムデータ」に変わります。'
+                ]
+            },
+            {
+                tag: '胃への休暇',
+                title: '胃に「完全オフ」を与える贅沢を味わう',
+                steps: [
+                    '私たちの胃は1日に何度も稼働し続けています。今は<strong>唯一の完全休憩時間</strong>です。',
+                    '「胃が休んでいる」という感覚を、スパにいるような贅沢として味わってみましょう。',
+                    '胃壁の粘膜が修復される時間でもあります。この静けさを意識して楽しんでください。'
+                ]
+            },
+            {
+                tag: 'メタ認知',
+                title: '「空腹を感じている自分」を俯瞰で眺める',
+                steps: [
+                    '「お腹が空いた」ではなく「お腹が空いていると感じている自分がいる」と言い換えます。',
+                    '感覚に飲み込まれるのではなく、<strong>観察者の視点</strong>に立つだけで衝動の強さが30%下がります。',
+                    '「この感覚はいつ来て、どう変化するか」を静かに観察してみてください。'
+                ]
+            },
+            {
+                tag: '感謝の育成',
+                title: '次の食事への「期待値」を育てる',
+                steps: [
+                    '食べられることは、実は当たり前ではありません。まずそれを思い出しましょう。',
+                    '次の食事で食べたいものを1つ決め、その<strong>香り・色・食感</strong>を細かく想像します。',
+                    '「待ち遠しい」という気持ちに変換されると、空腹感が期待感へとシフトします。'
+                ]
+            },
+            {
+                tag: '温度の活用',
+                title: '温かい飲み物で「満足信号」を先取りする',
+                steps: [
+                    '胃が温まると迷走神経が刺激され、<strong>満腹感に近い落ち着き</strong>が生まれます。',
+                    'ホットのハーブティーや白湯をカップに注いで、両手で包んでゆっくり飲む。',
+                    '温度という物理的な刺激が、空腹の「緊急感」を和らげてくれます。'
+                ]
+            },
+            {
+                tag: '睡眠への投資',
+                title: '空腹で眠ると「深い眠り」が手に入ると知る',
+                steps: [
+                    '夜の空腹時に眠ると、成長ホルモンの分泌量が増加します。',
+                    '胃に食べ物がないほど体の修復作業が<strong>フル稼働</strong>になるためです。',
+                    '「今夜の眠りの質への先行投資」として、今の空腹感を受け入れてみましょう。'
+                ]
+            },
+            {
+                tag: '鋭さの記録',
+                title: '空腹時特有の「閃き」をメモに捕まえる',
+                steps: [
+                    '歴史上の哲学者や芸術家の多くが、空腹時に重要な着想を得たとされています。',
+                    '今感じている研ぎ澄まされた感覚を、<strong>思考のキャプチャタイム</strong>として使いましょう。',
+                    'アイデア・気づき・やりたいことを3分間書き続けてみてください。'
+                ]
+            },
+            {
+                tag: '体のリテラシー',
+                title: '「空腹のピーク」を記録して自分の体を知る',
+                steps: [
+                    '多くの人は自分の空腹パターンを知らずに生きています。今日から変えましょう。',
+                    '時刻・空腹度（1〜10）・前の食事からの時間を記録します。<strong>3日続けると傾向が見える</strong>ようになります。',
+                    '自分の体のリズムがわかると、食事のタイミングを戦略的にコントロールできます。'
+                ]
+            },
+            {
+                tag: 'ポジティブ変換',
+                title: '「空腹＝意志が強い証拠」とラベルを貼る',
+                steps: [
+                    '脳は「ラベル」に強く影響されます。空腹感に良いラベルを貼り直しましょう。',
+                    '「今の私は、誘惑に打ち勝っている。これは<strong>意志力の筋トレ</strong>だ」と声に出す。',
+                    '自己効力感が高まると、次の誘惑にも強くなるというポジティブな連鎖が生まれます。'
+                ]
+            }
+        ]
+    },
+
+    stress: {
+        badge: { emoji: '🔥', label: 'ストレスモード', style: 'color: #c2410c; background: #fff7ed;' },
+        tip: '💡 ストレス食いの衝動は平均「17分」で自然に収まります。今が一番きついピークです。',
+        items: [
+            {
+                tag: '感情の正体',
+                title: 'イライラの「正体」を3行で書き出す',
+                steps: [
+                    '今の食欲は、胃ではなく<strong>感情が発信源</strong>です。',
+                    '紙かメモアプリに「何が嫌だったか・誰に何を言いたいか・本当に欲しいものは何か」を書く。',
+                    '書き終えると食べたい衝動が20〜40%低下することが研究で示されています。'
+                ]
+            },
+            {
+                tag: 'コルチゾール対策',
+                title: '4-7-8呼吸で神経スイッチを切り替える',
+                steps: [
+                    'ストレスホルモン（コルチゾール）が食欲中枢を刺激しています。呼吸で逆転させましょう。',
+                    '鼻から4秒吸い→7秒止め→口から8秒ゆっくり吐く。これを<strong>3セット</strong>繰り返します。',
+                    '副交感神経が優位になると、食欲の「緊急信号」が静まっていきます。'
+                ]
+            },
+            {
+                tag: 'オキシトシン補充',
+                title: '「つながり」でドーパミンを補う',
+                steps: [
+                    'ストレス食いはドーパミン不足を食べ物で補おうとする行動です。',
+                    '信頼できる人に短いメッセージを送る・ペットを撫でる・温かいものを飲むと<strong>同じ神経回路</strong>が満たされます。',
+                    '「食べる」以外のルートでその穴を埋める練習を今日から始めましょう。'
+                ]
+            },
+            {
+                tag: '感覚の置き換え',
+                title: '口の中の刺激を「別のもの」で満たす',
+                steps: [
+                    'お菓子を食べたい衝動の本質は「口腔への刺激」と「手の動き」への欲求です。',
+                    '炭酸水をごくごく飲む・アイスを一粒かじる・ガム1枚など<strong>刺激の代替品</strong>を用意しておく。',
+                    '物理的な感覚欲求が満たされると、感情の渦は自然に落ち着きます。'
+                ]
+            },
+            {
+                tag: '身体への転換',
+                title: 'ストレスを筋肉に変換する2分運動',
+                steps: [
+                    '今の怒りやもやもやは、実はエネルギーです。食べ物ではなく<strong>動作に変換</strong>します。',
+                    'スクワット20回・廊下を早歩き・階段を2往復など「きつすぎず暇にならない」強度で動く。',
+                    '心拍が上がるとエンドルフィンが放出され、食欲の衝動が落ち着くことが多いです。'
+                ]
+            },
+            {
+                tag: 'マインドフルネス',
+                title: '「今この瞬間」だけに意識を戻す1分間',
+                steps: [
+                    'ストレスは「過去の後悔」か「未来の不安」から生まれます。今は関係ありません。',
+                    '目を閉じて、<strong>今聞こえる音・今感じる温度・今の呼吸</strong>だけに集中する1分間を取ります。',
+                    '「今ここ」に意識が戻ると、食欲の衝動の80%は急速に薄れていきます。'
+                ]
+            },
+            {
+                tag: 'セルフコンパッション',
+                title: '「そうだよね、つらかったね」と自分に言う',
+                steps: [
+                    '食べたい衝動を感じること自体は、あなたが弱いのではありません。',
+                    '自分に「それはつらかったね。よく頑張った」と<strong>声に出して</strong>言ってあげてください。',
+                    '自己批判は衝動を強化します。共感は衝動を鎮めます。これは脳科学的な事実です。'
+                ]
+            },
+            {
+                tag: '環境リセット',
+                title: '「場所を変える」だけで感情がリセットされる',
+                steps: [
+                    '同じ場所にいると、同じ感情ループが続きます。<strong>物理的な移動</strong>が最速のリセット法です。',
+                    'トイレに行く・廊下に出る・窓を開けて外の空気を吸う、それだけで十分です。',
+                    '新しい環境の刺激が入ると、脳は「過去の感情」を一旦手放します。'
+                ]
+            },
+            {
+                tag: '音楽療法',
+                title: '好きな曲を1曲フルで聴き切る',
+                steps: [
+                    '音楽はドーパミンとセロトニンを同時に刺激できる数少ない手段のひとつです。',
+                    '「これを聴くと気分が上がる」という曲を1曲だけ選んで、<strong>目を閉じてフルで聴く</strong>。',
+                    '曲が終わる頃には、食べたい衝動の強度が確実に変化しているはずです。'
+                ]
+            },
+            {
+                tag: '冷却療法',
+                title: '手首を冷水で冷やして自律神経を整える',
+                steps: [
+                    '手首の内側には太い血管が通っており、冷やすと<strong>全身の体温と興奮が素早く下がります</strong>。',
+                    '洗面台の冷水に手首を30秒当てるか、保冷剤を軽く当てるだけでOKです。',
+                    '体温が下がると副交感神経が優位になり、感情の高ぶりが落ち着いてきます。'
+                ]
+            },
+            {
+                tag: '笑いの処方',
+                title: '面白い動画を1本だけ見る「笑い処方箋」',
+                steps: [
+                    'エンドルフィンは笑いでも分泌されます。これはお菓子と<strong>同じ神経回路</strong>を使います。',
+                    'あらかじめ「必ず笑える動画」を1本だけブックマークしておきましょう。',
+                    '笑い終わった後、食べたかったことを半分忘れていることに気づくはずです。'
+                ]
+            },
+            {
+                tag: '感情スコアリング',
+                title: '今の気分を1〜10でスコアにして可視化する',
+                steps: [
+                    '感情は「見える化」するだけで扱いやすくなります。',
+                    'メモに「ストレス度：〇、食べたい度：〇、原因：〇〇」と記録してみてください。',
+                    '<strong>数値にした瞬間に感情が客観化</strong>され、衝動に飲み込まれる力が弱まります。'
+                ]
+            },
+            {
+                tag: 'タイムロック',
+                title: '「10分後にまだ食べたければ食べる」と約束する',
+                steps: [
+                    '衝動は意志で止めようとすると反発します。「保留」は意外と効きます。',
+                    'タイマーを10分にセット。その間だけは何もしなくていい。<strong>ただ待つ</strong>だけです。',
+                    '10分後に再確認すると、衝動の強さが半分以下になっていることがほとんどです。'
+                ]
+            },
+            {
+                tag: '価値観の照合',
+                title: '「今食べることは、未来の自分に何を伝えるか」を考える',
+                steps: [
+                    '10秒だけ立ち止まって、「1週間後の自分はこの選択をどう思うか」と問います。',
+                    'ストレス食いは「今の自分」への優しさに見えて、<strong>未来の自分への負荷</strong>になることが多い。',
+                    '「今の私は、未来の私を大切にできる」という選択を一つ積み重ねてみましょう。'
+                ]
+            },
+            {
+                tag: '手のひら瞑想',
+                title: '両手のひらに意識を集中して「今」を感じる',
+                steps: [
+                    '両手のひらを膝の上に置き、<strong>手の重さ・温度・わずかな脈動</strong>に意識を向けます。',
+                    '「感じることができている」という事実に集中するだけで十分です。',
+                    '脳が手のひらの感覚に向くと、食欲の衝動を生んでいた思考ループが自然に止まります。'
+                ]
+            }
+        ]
+    },
+
+    boredom: {
+        badge: { emoji: '💤', label: '口寂しモード', style: 'color: #4338ca; background: #eef2ff;' },
+        tip: '💡 口寂しさの正体は「刺激不足」です。手や目に別の刺激を与えるだけで9割は解決します。',
+        items: [
+            {
+                tag: '習慣の解体',
+                title: '「食べる」トリガーを特定して名前をつける',
+                steps: [
+                    'いつ・何をしている時に食べたくなりますか？パターンを探しましょう。',
+                    '「作業前」「動画中」「会議後」など、<strong>トリガーに名前をつける</strong>だけで衝動が弱まります。',
+                    '習慣は無意識ですが、名前をつけた瞬間から意識的にコントロールできるようになります。'
+                ]
+            },
+            {
+                tag: '手の充電',
+                title: '「手を使う」別のルーティンに差し替える',
+                steps: [
+                    'お菓子を手に取る動作の本質は<strong>手への刺激欲求</strong>です。',
+                    '・テキストを打つ ・付箋に落書きする ・デスクを整理する ・マッサージボールを握る',
+                    'いずれかを「口が寂しくなったら即実行」のルールにしてスマホに登録しておきましょう。'
+                ]
+            },
+            {
+                tag: 'ドーパミン設計',
+                title: '「次の楽しみ」を18分以内に置く',
+                steps: [
+                    '暇な時間の食欲は「近くに報酬がない」状態で発生します。',
+                    '18分後に小さなご褒美を設定しましょう。お気に入りの曲・短い散歩・面白い記事など。',
+                    '<strong>報酬の時間軸を詰める</strong>だけで、食べ物以外でドーパミンが補えます。'
+                ]
+            },
+            {
+                tag: '集中の底上げ',
+                title: 'ポモドーロで「今ここ」に戻ってくる',
+                steps: [
+                    'ぼんやりしている時間が食欲を呼びます。意識を「今の作業」に引き戻しましょう。',
+                    '25分タイマーをセット。その間だけは、食べることを完全に保留します。',
+                    'タイマーが鳴ったら<strong>本当に食べたいか確認</strong>する。たいていの場合、衝動は消えています。'
+                ]
+            },
+            {
+                tag: 'ルーティン置換',
+                title: '「15時のお菓子」を新ルーティンで上書きする',
+                steps: [
+                    '習慣的な間食は「特定の時間帯の行動パターン」に紐づいています。',
+                    '同じ時間に・同じ場所で・別のことをする。コーヒーを丁寧に淹れる、5分ストレッチするなど<strong>儀式の中身だけ変える</strong>のがコツ。',
+                    '21日継続すると、脳がそちらを新しい「15時のルーティン」と認識します。'
+                ]
+            },
+            {
+                tag: '注意のリダイレクト',
+                title: 'スマホのアプリを「学ぶもの」に切り替える',
+                steps: [
+                    '暇つぶしのスクロールは食欲をむしろ高めます。<strong>能動的な学習</strong>に切り替えましょう。',
+                    '語学アプリを1レッスン・気になったニュース記事を1本・Podcastを5分だけ聴く。',
+                    '脳が「インプット」モードに入ると、口への注意がそこに割かれなくなります。'
+                ]
+            },
+            {
+                tag: '身体確認',
+                title: '「本当に空腹か」を体に直接聞いてみる',
+                steps: [
+                    '両手を胃の上に置いて目を閉じ、<strong>実際に胃が動いているか</strong>を感じ取ります。',
+                    'グーグーという感覚がなければ、それは口寂しさ（心理的な欲求）です。',
+                    '「体ではなく、脳が食べたがっている」と気づくだけで、衝動の半分が解消されます。'
+                ]
+            },
+            {
+                tag: '片付けの力',
+                title: '机の上を「1分タイマー」で整理する',
+                steps: [
+                    'タイマーを1分セットして、目の前の空間を整理しましょう。',
+                    '片付けは<strong>小さな達成感でドーパミンを得られる</strong>手軽な方法です。',
+                    '空間が整うと気持ちも整います。お菓子がなくても同じ満足感が得られます。'
+                ]
+            },
+            {
+                tag: '水分の可能性',
+                title: '「実は脱水かも」と疑って水を飲む',
+                steps: [
+                    '軽度の脱水症状は、脳が「空腹」と誤認することがあります。',
+                    'コップ1杯（200ml）の水を<strong>ゆっくり5回に分けて</strong>飲んでみてください。',
+                    '5分後に空腹感が薄れていれば、それは水分不足のサインでした。'
+                ]
+            },
+            {
+                tag: '外気のリセット',
+                title: '5分だけ外に出て「光と空気」を取り込む',
+                steps: [
+                    '室内にこもると感覚が鈍化し、食欲という刺激に頼りやすくなります。',
+                    '外に出て<strong>日光・風・周囲の音</strong>を全身で受け取ってみましょう。',
+                    '外部刺激が入ると脳のリフレッシュが起こり、食欲の呼び声が静まります。'
+                ]
+            },
+            {
+                tag: '創作への転換',
+                title: '思いついたことを「一言メモ」に書き飛ばす',
+                steps: [
+                    '手と脳を同時に使う創作活動は、口への衝動を効果的に抑えます。',
+                    'テーマは何でもOK。今日あったこと・気になること・将来やりたいことを<strong>思いつくまま</strong>書く。',
+                    '3分書き続けると集中状態に入り、食欲のことを完全に忘れている自分に気づきます。'
+                ]
+            },
+            {
+                tag: '優先順位の確認',
+                title: '「今日のTOP3タスク」を声に出して言う',
+                steps: [
+                    '暇からくる食欲の根本原因は「やるべきことへの接続が切れた状態」です。',
+                    '今日中にやることを3つ声に出す。声に出すだけで<strong>脳が目標モードに切り替わります</strong>。',
+                    'タスクへの意識が戻ると、口寂しさは背景に退いていきます。'
+                ]
+            },
+            {
+                tag: 'ストレッチ覚醒',
+                title: '首・肩・手首を30秒ずつほぐす',
+                steps: [
+                    '体が固まっているとき、脳は「リラックス」と「刺激」を混同しがちです。',
+                    '首を左右にゆっくり倒す→肩を前後に大きく回す→手首をぐるぐる回す。<strong>各30秒</strong>。',
+                    '血流が改善されると覚醒度が上がり、惰性の食欲が消えやすくなります。'
+                ]
+            },
+            {
+                tag: '未来への手紙',
+                title: '1ヶ月後の自分に1行メッセージを書く',
+                steps: [
+                    '「今日の私は口寂しさに気づいて、別のことをした」と未来の自分に伝えましょう。',
+                    'メモアプリに日付と一緒に残すだけでOK。<strong>行動を記録する意識</strong>が自制心を強化します。',
+                    '積み重ねを振り返ると自己効力感が育ち、次の衝動が来たときに対処しやすくなります。'
+                ]
+            },
+            {
+                tag: '好奇心の起動',
+                title: '「ずっと気になっていたこと」を今すぐ調べる',
+                steps: [
+                    '好奇心が満たされているとき、脳は口よりも目と耳に集中します。',
+                    '前から気になっていた言葉・場所・仕組みを1つだけ検索して、<strong>5分だけ調べてみる</strong>。',
+                    '知的な発見があると脳がドーパミンを放出し、食欲の呼び声が遠くなります。'
+                ]
+            }
+        ]
+    }
+};
+
+let currentMode = null;
+let lastIndex = -1;
+
+function selectMode(mode) {
+    currentMode = mode;
+    lastIndex = -1;
+
+    // ボディにモード設定してCSS変数を切り替え
+    document.body.setAttribute('data-mode', mode);
+
+    const info = IDEAS[mode];
+
+    // バッジ設定
+    const badge = document.getElementById('badge');
+    badge.textContent = `${info.badge.emoji} ${info.badge.label}`;
+    badge.style.cssText = info.badge.style;
+
+    // 画面切替
+    document.getElementById('screen-select').style.display = 'none';
+    const ideaScreen = document.getElementById('screen-idea');
+    ideaScreen.style.display = 'block';
+    ideaScreen.classList.add('active');
+
+    // 最初のアイデアを表示
+    nextIdea();
+}
+
+function nextIdea() {
+    const info = IDEAS[currentMode];
+    let idx;
+    do { idx = Math.floor(Math.random() * info.items.length); }
+    while (idx === lastIndex && info.items.length > 1);
+    lastIndex = idx;
+
+    const item = info.items[idx];
+    document.getElementById('idea-tag').textContent = item.tag;
+    document.getElementById('idea-title').textContent = item.title;
+
+    const bodyEl = document.getElementById('idea-body');
+    bodyEl.innerHTML = item.steps.map((s, i) => `
+        <div class="idea-step">
+            <div class="step-num">${i + 1}</div>
+            <div>${s}</div>
+        </div>
+    `).join('');
+
+    // アニメーション再生
+    const panel = document.getElementById('idea-panel');
+    panel.classList.remove('slide-card');
+    void panel.offsetWidth;
+    panel.classList.add('slide-card');
+
+    // Tip表示
+    const tip = document.getElementById('tip-box');
+    tip.textContent = info.tip;
+    tip.classList.add('visible');
+
+    // X用テキスト生成・表示
+    updateCopyArea(item);
+
+    // コピーボタンをリセット
+    const btnLabel = document.getElementById('copy-btn-label');
+    const btnCopy = document.getElementById('btn-copy');
+    btnLabel.textContent = 'テキストをコピー';
+    btnCopy.classList.remove('copied');
+}
+
+// HTMLタグを除去してプレーンテキストに変換
+function stripHtml(html) {
+    return html.replace(/<[^>]+>/g, '');
+}
+
+// X投稿用テキストを生成（140字以内）
+function buildTweetText(item) {
+    const tag   = item.tag;
+    const title = item.title;
+    const step1 = stripHtml(item.steps[0]);
+    const hashtag = '#HungerCreative';
+
+    // フル版を構築してみる
+    const full = `【${tag}】${title}\n${step1}\n${hashtag}`;
+    if ([...full].length <= 140) return full;
+
+    // step1を短縮して収める
+    const base = `【${tag}】${title}\n`;
+    const suffix = `\n${hashtag}`;
+    const budget = 140 - [...base].length - [...suffix].length - 1; // -1 for「…」
+    const trimmed = [...step1].slice(0, budget).join('') + '…';
+    return `${base}${trimmed}${suffix}`;
+}
+
+function updateCopyArea(item) {
+    const text = buildTweetText(item);
+    const len  = [...text].length;
+
+    document.getElementById('copy-preview').textContent = text;
+
+    const counter = document.getElementById('char-count');
+    counter.textContent = `${len} / 140`;
+    counter.classList.toggle('over', len > 140);
+
+    document.getElementById('copy-area').classList.add('visible');
+}
+
+function copyTweet() {
+    const text = document.getElementById('copy-preview').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btnLabel = document.getElementById('copy-btn-label');
+        const btnCopy  = document.getElementById('btn-copy');
+        btnLabel.textContent = 'コピー済み ✓';
+        btnCopy.classList.add('copied');
+        showToast();
+    }).catch(() => {
+        // fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast();
+    });
+}
+
+function showToast() {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function goBack() {
+    document.body.removeAttribute('data-mode');
+    document.getElementById('screen-select').style.display = 'block';
+    document.getElementById('screen-idea').style.display = 'none';
+    document.getElementById('tip-box').classList.remove('visible');
+    document.getElementById('copy-area').classList.remove('visible');
+}
+</script>
+</body>
+</html>
