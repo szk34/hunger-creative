@@ -26,6 +26,14 @@
             --temptation-light: #fef3c7;
             --temptation-mid: #fde68a;
             --temptation-accent: #fbbf24;
+            --reward-primary: #7c3aed;
+            --reward-light: #ede9fe;
+            --reward-mid: #ddd6fe;
+            --reward-accent: #a78bfa;
+            --social-primary: #0f766e;
+            --social-light: #f0fdfa;
+            --social-mid: #99f6e4;
+            --social-accent: #2dd4bf;
             --mode-primary: #15803d;
             --mode-light: #dcfce7;
             --mode-mid: #bbf7d0;
@@ -96,17 +104,18 @@
         }
 
         .mode-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
         }
 
         .mode-card {
             display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1.1rem 1.4rem;
-            border-radius: 18px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.55rem;
+            padding: 0.9rem 1rem;
+            border-radius: 16px;
             border: 2px solid transparent;
             background: white;
             cursor: pointer;
@@ -120,29 +129,34 @@
         .mode-card.stress  { border-color: var(--stress-mid);  }
         .mode-card.boredom { border-color: var(--boredom-mid); }
         .mode-card.temptation { border-color: var(--temptation-mid); }
+        .mode-card.reward  { border-color: var(--reward-mid);  }
+        .mode-card.social  { border-color: var(--social-mid);  }
 
         .mode-icon {
-            width: 48px; height: 48px;
-            border-radius: 14px;
+            width: 40px; height: 40px;
+            border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             flex-shrink: 0;
         }
         .mode-card.hunger  .mode-icon { background: var(--hunger-light);  }
         .mode-card.stress  .mode-icon { background: var(--stress-light);  }
         .mode-card.boredom .mode-icon { background: var(--boredom-light); }
         .mode-card.temptation .mode-icon { background: var(--temptation-light); }
+        .mode-card.reward  .mode-icon { background: var(--reward-light);  }
+        .mode-card.social  .mode-icon { background: var(--social-light);  }
 
         .mode-text-wrap {}
         .mode-name {
-            font-size: 0.95rem;
+            font-size: 0.82rem;
             font-weight: 700;
             color: var(--text-dark);
+            line-height: 1.3;
         }
         .mode-desc {
-            font-size: 0.72rem;
+            font-size: 0.65rem;
             color: var(--text-light);
-            margin-top: 0.15rem;
+            margin-top: 0.1rem;
             line-height: 1.4;
         }
 
@@ -369,6 +383,8 @@
         body[data-mode="stress"]  { --mode-primary: var(--stress-primary);  --mode-light: var(--stress-light);  --mode-mid: var(--stress-mid);  --mode-accent: var(--stress-accent);  }
         body[data-mode="boredom"] { --mode-primary: var(--boredom-primary); --mode-light: var(--boredom-light); --mode-mid: var(--boredom-mid); --mode-accent: var(--boredom-accent); }
         body[data-mode="temptation"] { --mode-primary: var(--temptation-primary); --mode-light: var(--temptation-light); --mode-mid: var(--temptation-mid); --mode-accent: var(--temptation-accent); }
+        body[data-mode="reward"]  { --mode-primary: var(--reward-primary);  --mode-light: var(--reward-light);  --mode-mid: var(--reward-mid);  --mode-accent: var(--reward-accent);  }
+        body[data-mode="social"]  { --mode-primary: var(--social-primary);  --mode-light: var(--social-light);  --mode-mid: var(--social-mid);  --mode-accent: var(--social-accent);  }
     </style>
 </head>
 <body>
@@ -408,7 +424,21 @@
                 <div class="mode-icon">👀</div>
                 <div class="mode-text-wrap">
                     <div class="mode-name">おいしそうなものが目に入った</div>
-                    <div class="mode-desc">視覚的誘惑・衝動買い食い・SNS映え</div>
+                    <div class="mode-desc">視覚的誘惑・SNS映え・衝動買い食い</div>
+                </div>
+            </div>
+            <div class="mode-card reward" onclick="selectMode('reward')">
+                <div class="mode-icon">🏆</div>
+                <div class="mode-text-wrap">
+                    <div class="mode-name">頑張ったからご褒美に食べたい</div>
+                    <div class="mode-desc">達成感・自己許可・解放感</div>
+                </div>
+            </div>
+            <div class="mode-card social" onclick="selectMode('social')">
+                <div class="mode-icon">👥</div>
+                <div class="mode-text-wrap">
+                    <div class="mode-name">場の空気で食べてしまいそう</div>
+                    <div class="mode-desc">同調圧力・勧められた・飲み会</div>
                 </div>
             </div>
         </div>
@@ -882,6 +912,290 @@ const IDEAS = {
                     '最初の一口の満足度を10点満点で<strong>事前に予測</strong>してみましょう。たいてい8〜9点を想定します。',
                     '実際には最初の一口が最も美味しく、それ以降は急速に幸福度が下がることが脳科学で示されています。',
                     '「一口食べても期待の80%しか得られず、そのあとは後悔の可能性もある」と事前計算することで冷静になれます。'
+                ]
+            }
+        ]
+    },
+
+    reward: {
+        badge: { emoji: '🏆', label: 'ご褒美モード', style: 'color: #7c3aed; background: #ede9fe;' },
+        tip: '💡 達成感はすでに「手に入っています」。食べ物はその達成感を証明しません。別の形で受け取ってみましょう。',
+        items: [
+            {
+                tag: '達成感の正体',
+                title: '達成感はすでに「手に入った」と気づく',
+                steps: [
+                    '頑張った自分への満足感は、食べる前にすでに存在しています。',
+                    '「ご褒美に食べる」は達成感を食べ物に紐付ける習慣ですが、その達成感自体はすでに得られています。',
+                    '「私はもう十分やった」と<strong>声に出して</strong>みましょう。それだけで脳への報告が完成します。'
+                ]
+            },
+            {
+                tag: '代替報酬リスト',
+                title: '「食べ物以外のご褒美」を今すぐ3つ書く',
+                steps: [
+                    '食べることが報酬になっているのは習慣であり、本能ではありません。',
+                    '好きな音楽・入浴・好きな動画・お気に入りのコーヒーなど<strong>「食べない報酬」を3つ</strong>メモしてください。',
+                    'リストがあるだけで、次に「食べたい」と思ったとき代替案を即座に選べます。'
+                ]
+            },
+            {
+                tag: '言語報酬',
+                title: '「よくやった」を自分の声で3回言う',
+                steps: [
+                    '承認欲求は声によって一部満たされます。これは脳科学的に実証されています。',
+                    '自分の名前を使って「〇〇、今日よくやったな」と<strong>声に出して3回</strong>言いましょう。',
+                    '自分への言語的承認は、食べ物よりも自己肯定感の向上に直結します。'
+                ]
+            },
+            {
+                tag: '記録の達成感',
+                title: '「やり切ったこと」をタスクリストにチェックする',
+                steps: [
+                    'タスクに「完了」のチェックを入れる行為だけで、<strong>ドーパミンが分泌</strong>されます。',
+                    '今日達成したことをリストアップして、一つひとつチェックを入れてみましょう。',
+                    '「記録した」という視覚的な証拠が、食べ物と同等の報酬感を生むことがあります。'
+                ]
+            },
+            {
+                tag: '感謝の発信',
+                title: '誰かに「ありがとう」を送って報酬を共有する',
+                steps: [
+                    '達成感は「誰かと共有する」ことでオキシトシンが放出され、より大きな満足感になります。',
+                    '関わった人・支えてくれた人に<strong>短いメッセージを送ってみましょう</strong>。',
+                    '感謝を伝えた後は、食べ物への欲求が自然と引いていくことが多いです。'
+                ]
+            },
+            {
+                tag: '休息の正当化',
+                title: '「食べる」ではなく「5分間何もしない」をご褒美にする',
+                steps: [
+                    '本当に疲れているなら、体が求めているのは栄養ではなく<strong>休息</strong>です。',
+                    'タイマーを5分にセットして、目を閉じて何も考えない時間を作りましょう。',
+                    '「何もしない贅沢」こそ、忙しい人に最もふさわしいご褒美です。'
+                ]
+            },
+            {
+                tag: 'ループの可視化',
+                title: '「ご褒美食い→後悔」のループを紙に書く',
+                steps: [
+                    '行動パターンを「見える化」するだけで、無意識の習慣が弱まります。',
+                    '「頑張る→ご褒美食い→後悔→また頑張る」というループを<strong>紙に書いて</strong>みましょう。',
+                    '自分のパターンを俯瞰することで、「また同じことをしようとしている」と気づけます。'
+                ]
+            },
+            {
+                tag: '未来の報酬',
+                title: '「1ヶ月後の大きなご褒美」を決めて我慢に意味をつける',
+                steps: [
+                    '小さな日々のご褒美食いを我慢した先に、より大きな報酬を設定しましょう。',
+                    '「今日を我慢したら、月末に〇〇する」という目標を<strong>具体的に決めます</strong>。',
+                    '「月末の楽しみ」を鮮明にイメージするほど、目の前の衝動が薄まります。'
+                ]
+            },
+            {
+                tag: '五感ご褒美',
+                title: 'お気に入りの香り・音楽・触感でご褒美を代替する',
+                steps: [
+                    '五感への刺激は食べることと<strong>同じ神経回路（報酬系）を刺激します</strong>。',
+                    'お気に入りのアロマを嗅ぐ・好きな曲を流す・肌触りのよいものを触る。',
+                    '「食べない報酬」として五感ご褒美を習慣化すると、食欲への依存が自然に薄まります。'
+                ]
+            },
+            {
+                tag: '承認の分解',
+                title: '「本当に欲しいのは食べ物か、承認か」を問う',
+                steps: [
+                    'ご褒美食いの根本には「自分を認めてほしい」という<strong>承認欲求</strong>が潜んでいることがあります。',
+                    '「誰かに今日の頑張りを知ってほしいか？」と自問してみましょう。',
+                    'YESなら、誰かに話す・SNSに投稿する・日記に書くことで同じ欲求が満たされます。'
+                ]
+            },
+            {
+                tag: '次の目標設定',
+                title: '達成の余韻の中で「次のゴール」を決める',
+                steps: [
+                    '達成感のピーク時は、次の目標を設定する<strong>最もモチベーションが高い瞬間</strong>です。',
+                    '「次は何を達成したいか」を1つだけ決めて書いておきましょう。',
+                    '前進している感覚が生まれると、現在の達成感がより豊かになり食欲の穴を埋めます。'
+                ]
+            },
+            {
+                tag: '身体ご褒美',
+                title: '自分の体を「よく頑張った」とマッサージする',
+                steps: [
+                    '食べてやるより、体に直接「ありがとう」を伝える方法があります。',
+                    '首・肩・手首を1分間<strong>ゆっくりほぐして</strong>みましょう。',
+                    '体への直接的な優しさは、食べ物より速く充足感を生むことがあります。'
+                ]
+            },
+            {
+                tag: '1時間後の比較',
+                title: '「食べた自分」と「食べなかった自分」の1時間後を比べる',
+                steps: [
+                    '食べた直後の満足感と、1時間後の後悔・だるさ・罪悪感を具体的に想像します。',
+                    '食べなかった場合の1時間後：爽快感・自己効力感・<strong>達成感の二重取り</strong>。',
+                    'どちらの「1時間後の自分」になりたいか、10秒だけ考えてみましょう。'
+                ]
+            },
+            {
+                tag: 'コスパの計算',
+                title: '「このご褒美、本当にコスパいいか」を計算する',
+                steps: [
+                    '食べ物のカロリーを消費するのに必要な運動量を一瞬だけ考えましょう。',
+                    'チョコ1枚（約250kcal）≒ 約<strong>1時間のウォーキング</strong>。このコストに見合うか確認する。',
+                    '「このご褒美は、明日の自分への請求書でもある」と認識すると選択が変わります。'
+                ]
+            },
+            {
+                tag: '記念日化',
+                title: '「我慢できた日」をカレンダーに記録していく',
+                steps: [
+                    '食べなかった日に○をつけるだけで、<strong>連続記録が新たなご褒美</strong>になります。',
+                    '「連続〇日達成」という記録自体がドーパミンを生む報酬系ゲームになります。',
+                    '記録が途切れたくないという心理が、食欲の衝動より強くなることがあります。'
+                ]
+            }
+        ]
+    },
+
+    social: {
+        badge: { emoji: '👥', label: '同調モード', style: 'color: #0f766e; background: #f0fdfa;' },
+        tip: '💡 「断る」ことは相手への拒絶ではありません。自分の体への誠実さです。相手はあなたが思うほど気にしていません。',
+        items: [
+            {
+                tag: '断り方の技術',
+                title: '「ありがとう、でも大丈夫」を今日練習する',
+                steps: [
+                    '断ることへの罪悪感の正体は「相手を傷つけるかも」という<strong>過剰な想像</strong>です。',
+                    '「ありがとうございます、今は遠慮します」という一文を声に出して練習しましょう。',
+                    '断り文句をあらかじめ持っているだけで、咄嗟の場面でも自然に使えます。'
+                ]
+            },
+            {
+                tag: 'グラス作戦',
+                title: '飲み物を「常に手に持つ」で場に溶け込む',
+                steps: [
+                    '食べていない手持ち無沙汰を解消するために、グラスや飲み物を常に持ちましょう。',
+                    'お茶・水・ノンアルコールドリンクでも<strong>「参加している」感は十分に演出</strong>できます。',
+                    '「何か持っている」状態が、周囲から食べ物を勧められる頻度を減らします。'
+                ]
+            },
+            {
+                tag: '事前作戦',
+                title: '「場に入る前」に食べる量を自分で決めておく',
+                steps: [
+                    '飲み会・会議・パーティの前に「今日は〇〇だけ食べる」と<strong>決めておきます</strong>。',
+                    '事前の意思決定は、その場の雰囲気に流されるリスクを大幅に下げます。',
+                    '「決めていた」という事実が、現場での自分の軸になります。'
+                ]
+            },
+            {
+                tag: '少量の戦略',
+                title: '「少しだけ取る」で同調と節制を両立する',
+                steps: [
+                    '完全に断ると目立つ場面では、<strong>少量だけ取ること</strong>で場に馴染みつつ実害を最小化できます。',
+                    '皿に取っても、すぐ食べる必要はありません。「取っている状態」で十分です。',
+                    '「断る」か「全部食べる」の二択ではなく、少量取って手をつけないという第三の選択があります。'
+                ]
+            },
+            {
+                tag: '会話への転換',
+                title: '「話す」ことに集中して食べる暇をなくす',
+                steps: [
+                    '会話中は物理的に食べにくくなります。<strong>積極的に話す側</strong>に回りましょう。',
+                    '相手への質問を準備しておくと、会話主導権を持ちやすくなります。',
+                    '「今日は聞き役に徹する」と決めるだけでも、自然と食べる量が減ります。'
+                ]
+            },
+            {
+                tag: '同調の正体',
+                title: '「なぜ食べようとしているか」を30秒考える',
+                steps: [
+                    '今食べようとしているのは「お腹が空いているから」ですか？違いますよね。',
+                    '「空気を読んでいるから」「断るのが面倒だから」という<strong>正直な理由を確認</strong>します。',
+                    '理由が「他者への配慮」だけなら、食べる必要はないと脳に伝えてください。'
+                ]
+            },
+            {
+                tag: '健康宣言',
+                title: '「最近体に気をつけてて」と軽く宣言する',
+                steps: [
+                    '事前に「最近食事を見直しているんです」と一言言うだけで、<strong>周囲の勧め方が変わります</strong>。',
+                    '詳しい説明は不要。「気をつけてて」の一言で十分な防衛線になります。',
+                    '宣言することで自分の意思も強化され、その場での判断がぶれにくくなります。'
+                ]
+            },
+            {
+                tag: '断られ側の心理',
+                title: '「断られた側は実は気にしていない」と知る',
+                steps: [
+                    '断ったとき相手が傷つくかどうかを5秒考えてみましょう。<strong>実際はほぼ気にしていません</strong>。',
+                    '勧める側の目的は「一緒に楽しむこと」であり「強制的に食べさせること」ではありません。',
+                    '「断ることへの罪悪感」は自分が作り出した幻想であることが多いです。'
+                ]
+            },
+            {
+                tag: '観察者モード',
+                title: '「その場の食文化」を人類学者として観察する',
+                steps: [
+                    '食べる代わりに、その場の食のシーンを<strong>「面白い社会現象」として眺めて</strong>みましょう。',
+                    '「誰が何を食べているか・どんな会話をしているか」を観察することに意識を向けます。',
+                    '観察者の立場に立つと、食べることへの同調圧力が自然と弱まります。'
+                ]
+            },
+            {
+                tag: '体調カード',
+                title: '「今日ちょっと胃の調子が」を使いこなす',
+                steps: [
+                    '嘘をつく必要はありません。食べ過ぎた翌日・睡眠不足・緊張しているなら本当のことです。',
+                    '「今日は胃が少し重くて」という一言は、<strong>相手への説明として十分かつ角が立ちません</strong>。',
+                    'この言葉があると周囲も自然に納得し、それ以上勧めてこなくなります。'
+                ]
+            },
+            {
+                tag: '事前食戦略',
+                title: '会食の前に低カロリーなものを軽く食べておく',
+                steps: [
+                    '空腹状態で飲み会・パーティに入ると、同調圧力に加えて空腹まで重なり<strong>制御不能</strong>になります。',
+                    '出発前に豆腐・プロテイン・野菜など腹持ちのよいものを軽く食べておきましょう。',
+                    '「すでに少し食べている」状態が、その場での選択の自由度を格段に上げます。'
+                ]
+            },
+            {
+                tag: '本音の分離',
+                title: '「その人が好き」と「食べ物を受け取る」を切り離す',
+                steps: [
+                    '「勧めてくれた人が好きだから食べる」は、<strong>感情と行動を混同した</strong>思考パターンです。',
+                    '「あなたのことは好きですが、これは食べません」の両立は完全に可能です。',
+                    '相手への好意と食べ物を受け取ることを、別々の問題として処理してみましょう。'
+                ]
+            },
+            {
+                tag: '30分ルール',
+                title: '「少し後で食べます」で時間を稼ぐ',
+                steps: [
+                    '即座に断りにくい場面では「後でいただきます」と<strong>時間を稼ぐ戦術</strong>があります。',
+                    '30分後には場の空気が変わり、そのまま食べないで済むことがほとんどです。',
+                    '「保留」は「拒否」と違い、人間関係を傷つけずに済む柔らかい選択肢です。'
+                ]
+            },
+            {
+                tag: 'ルール開示',
+                title: '「自分ルール」を自然な話題として共有する',
+                steps: [
+                    '「実は最近16時間断食をやってて」「夜は炭水化物を抑えてて」など<strong>自分のルールを話す</strong>。',
+                    '自己開示はむしろ会話のネタになり、断ることへの言い訳が不要になります。',
+                    'ルールを持っている人への勧め方は自然と変わります。「じゃあ仕方ないね」で終わります。'
+                ]
+            },
+            {
+                tag: '振り返りの習慣',
+                title: 'その場を離れた後「どう感じたか」を記録する',
+                steps: [
+                    '同調して食べた後の気持ちを正直に記録しましょう。後悔・満足・どちらでもない。',
+                    '断れた場合も記録。「断ったが相手の反応はどうだったか」を<strong>客観的に確認</strong>する。',
+                    'データが積み重なると「断っても何も起きない」という証拠が蓄積され、次が楽になります。'
                 ]
             }
         ]
