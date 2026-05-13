@@ -22,6 +22,10 @@
             --boredom-light: #eef2ff;
             --boredom-mid: #c7d2fe;
             --boredom-accent: #818cf8;
+            --temptation-primary: #b45309;
+            --temptation-light: #fef3c7;
+            --temptation-mid: #fde68a;
+            --temptation-accent: #fbbf24;
             --mode-primary: #15803d;
             --mode-light: #dcfce7;
             --mode-mid: #bbf7d0;
@@ -115,6 +119,7 @@
         .mode-card.hunger  { border-color: var(--hunger-mid);  }
         .mode-card.stress  { border-color: var(--stress-mid);  }
         .mode-card.boredom { border-color: var(--boredom-mid); }
+        .mode-card.temptation { border-color: var(--temptation-mid); }
 
         .mode-icon {
             width: 48px; height: 48px;
@@ -126,6 +131,7 @@
         .mode-card.hunger  .mode-icon { background: var(--hunger-light);  }
         .mode-card.stress  .mode-icon { background: var(--stress-light);  }
         .mode-card.boredom .mode-icon { background: var(--boredom-light); }
+        .mode-card.temptation .mode-icon { background: var(--temptation-light); }
 
         .mode-text-wrap {}
         .mode-name {
@@ -362,6 +368,7 @@
         body[data-mode="hunger"]  { --mode-primary: var(--hunger-primary);  --mode-light: var(--hunger-light);  --mode-mid: var(--hunger-mid);  --mode-accent: var(--hunger-accent);  }
         body[data-mode="stress"]  { --mode-primary: var(--stress-primary);  --mode-light: var(--stress-light);  --mode-mid: var(--stress-mid);  --mode-accent: var(--stress-accent);  }
         body[data-mode="boredom"] { --mode-primary: var(--boredom-primary); --mode-light: var(--boredom-light); --mode-mid: var(--boredom-mid); --mode-accent: var(--boredom-accent); }
+        body[data-mode="temptation"] { --mode-primary: var(--temptation-primary); --mode-light: var(--temptation-light); --mode-mid: var(--temptation-mid); --mode-accent: var(--temptation-accent); }
     </style>
 </head>
 <body>
@@ -395,6 +402,13 @@
                 <div class="mode-text-wrap">
                     <div class="mode-name">なんとなく口が寂しい</div>
                     <div class="mode-desc">暇つぶし・習慣・手持ち無沙汰</div>
+                </div>
+            </div>
+            <div class="mode-card temptation" onclick="selectMode('temptation')">
+                <div class="mode-icon">👀</div>
+                <div class="mode-text-wrap">
+                    <div class="mode-name">おいしそうなものが目に入った</div>
+                    <div class="mode-desc">視覚的誘惑・衝動買い食い・SNS映え</div>
                 </div>
             </div>
         </div>
@@ -726,6 +740,148 @@ const IDEAS = {
                     '両手のひらを膝の上に置き、<strong>手の重さ・温度・わずかな脈動</strong>に意識を向けます。',
                     '「感じることができている」という事実に集中するだけで十分です。',
                     '脳が手のひらの感覚に向くと、食欲の衝動を生んでいた思考ループが自然に止まります。'
+                ]
+            }
+        ]
+    },
+
+    temptation: {
+        badge: { emoji: '👀', label: '視覚誘惑モード', style: 'color: #b45309; background: #fef3c7;' },
+        tip: '💡 視覚的な食欲の衝動は平均「90秒」で消えます。目をそらすだけで、脳は次の刺激を探し始めます。',
+        items: [
+            {
+                tag: '視覚の切断',
+                title: '意識的に「目をそらす」を3回やり切る',
+                steps: [
+                    'おいしそうなものへの衝動は、<strong>視覚情報が入り続ける限り</strong>強化され続けます。',
+                    'まず目をそらし、視線を別の場所（遠くの壁・空・手元）に3秒ずつ3回移してみてください。',
+                    '視覚入力が途切れるたびに衝動の強度が下がります。3回目には「あれ、まあいいか」と感じるはずです。'
+                ]
+            },
+            {
+                tag: '広告的思考',
+                title: '「これは売るために作られた映像だ」と認識する',
+                steps: [
+                    'SNSや広告の食べ物は<strong>プロが照明・加工・演出</strong>を駆使した「最大魅力版」です。',
+                    '「今見ているのは商品ではなく、私を動かすために設計されたコンテンツだ」と声に出してみましょう。',
+                    'マーケティングの仕掛けに気づいた瞬間、脳は「騙されない」モードに切り替わります。'
+                ]
+            },
+            {
+                tag: '10秒ルール',
+                title: '目をつぶって10秒数えてから判断する',
+                steps: [
+                    '衝動は「即座の行動」を求めますが、10秒の間に神経回路が切り替わります。',
+                    '目をつぶり、ゆっくり1から10まで数える。<strong>これだけで衝動の緊急度が20〜30%下がります</strong>。',
+                    '10秒後に目を開けて、「まだ本当に食べたいか？」を改めて問いかけてみましょう。'
+                ]
+            },
+            {
+                tag: '写真だけ撮る',
+                title: '「食べる代わりに記録する」に変換する',
+                steps: [
+                    '食への欲求の一部は「この体験を捉えたい」という所有欲から来ています。',
+                    'スマホで写真だけ撮って、「記録した」という達成感を脳に与えてみましょう。',
+                    '<strong>視覚的に「手に入れた」</strong>という感覚が衝動の半分を解消することがあります。'
+                ]
+            },
+            {
+                tag: '匂いで完結',
+                title: '「嗅ぐだけ」で脳の欲求を部分的に満たす',
+                steps: [
+                    '食欲の脳内報酬の一部は、実は<strong>嗅覚だけで得られます</strong>。',
+                    '近くにあれば香りを深く吸い込んで、香りの層を分解するように楽しんでみましょう。',
+                    '「香りだけで楽しんだ」という行為が、食べなかった自分への小さな達成感になります。'
+                ]
+            },
+            {
+                tag: '次の食事に予約',
+                title: '「今じゃなくて次の食事に入れよう」と決める',
+                steps: [
+                    '食べることを「拒否」するより「延期」する方が、脳への負荷がはるかに小さい。',
+                    'メモアプリに「今日の夕食にあれを食べる」と書き込みましょう。<strong>書くことで所有感が生まれます</strong>。',
+                    '「禁止」ではなく「スケジューリング」なので、意志力を消耗せずに済みます。'
+                ]
+            },
+            {
+                tag: '報酬回路の解説',
+                title: '「ドーパミンのピーク」を正しく理解する',
+                steps: [
+                    '食べ物を「見た瞬間」が、実はドーパミン分泌の<strong>最大ピーク</strong>です。食べた後ではありません。',
+                    '「今がドーパミンの頂点で、ここから下がるだけ」と認識してみましょう。',
+                    '食べることは「報酬の回収」ではなく「期待の消費」だとわかると、衝動が客観化されます。'
+                ]
+            },
+            {
+                tag: '距離の法則',
+                title: '物理的に「2メートル以上」離れる',
+                steps: [
+                    '視覚と食欲の連動は<strong>距離に比例して弱まります</strong>。2メートル離れるだけで衝動は激減します。',
+                    '席を立って別の場所に移動する・画面をスクロールして見えない場所にする・棚の扉を閉める。',
+                    '「目の前にない」という物理的な事実が、脳に「選択肢の外」だと伝えます。'
+                ]
+            },
+            {
+                tag: '成分ラベル確認',
+                title: 'パッケージの「裏面」を30秒じっくり読む',
+                steps: [
+                    '食欲は「完成品のビジュアル」への反応です。<strong>原材料の羅列</strong>はその魔法を解除します。',
+                    '添加物・糖質・脂質の数字をゆっくり読み上げてみましょう。特に成分名を口に出してみる。',
+                    '「これを体に入れる価値はあるか」と問うと、衝動的な欲求が論理的な判断に切り替わります。'
+                ]
+            },
+            {
+                tag: '感情のラベリング',
+                title: '「今、何を感じているか」に名前をつける',
+                steps: [
+                    '視覚的誘惑に強く引かれるときは、背景に<strong>満たされていない感情</strong>が潜んでいます。',
+                    '「今の気持ちは何か」を一言で書いてみましょう。退屈・疲れ・緊張・達成感など。',
+                    '感情に名前がつくと脳の前頭前野が活性化し、衝動を生む扁桃体の活動が抑制されます。'
+                ]
+            },
+            {
+                tag: '身体チェック',
+                title: '胃に手を当てて「本当に求めているか」確認する',
+                steps: [
+                    '視覚から来た食欲は、胃からのシグナルとは<strong>まったく別物</strong>です。',
+                    '片手を胃の上に置いて、グーグーという実際の空腹感があるかどうかを確認してみましょう。',
+                    '「目が食べたいだけで、胃は求めていない」と気づくことが最も即効性のある停止方法です。'
+                ]
+            },
+            {
+                tag: '未来の自分への問い',
+                title: '「3時間後の自分」が感謝するか考える',
+                steps: [
+                    '「今この瞬間の自分」と「3時間後に振り返る自分」は、いつも評価が違います。',
+                    '3時間後に「食べなくて良かった」と思えるか、<strong>心の中で3時間後の自分に聞いてみる</strong>。',
+                    '「未来の自分が誇れる選択をする」という軸で判断すると、衝動が静まることが多い。'
+                ]
+            },
+            {
+                tag: '注意のハイジャック',
+                title: '全力で「別の何か」に5分だけ集中する',
+                steps: [
+                    '視覚誘惑への衝動は、<strong>注意資源を奪い合う</strong>ことで弱められます。',
+                    '全く別の作業（難しい計算・パズル・文章を書く）を5分間だけ本気でやってみましょう。',
+                    '5分後に元の食欲に戻ったとき、その強度は確実に半減しているはずです。'
+                ]
+            },
+            {
+                tag: 'ゴールのビジュアル化',
+                title: '自分の「目指す状態」を30秒間イメージする',
+                steps: [
+                    '食べ物のビジュアルに対して、<strong>より強力なビジュアル</strong>で対抗します。',
+                    '目を閉じて、なりたい体・感じたいコンディション・手に入れたいものを30秒間鮮明にイメージする。',
+                    '「今食べることで、そのイメージが遠ざかるか・近づくか」を静かに確認してください。'
+                ]
+            },
+            {
+                tag: '一口仮説',
+                title: '「一口目の幸福度」を事前に予測して比較する',
+                steps: [
+                    '最初の一口の満足度を10点満点で<strong>事前に予測</strong>してみましょう。たいてい8〜9点を想定します。',
+                    '実際には最初の一口が最も美味しく、それ以降は急速に幸福度が下がることが脳科学で示されています。',
+                    '「一口食べても期待の80%しか得られず、そのあとは後悔の可能性もある」と事前計算することで冷静になれます。'
                 ]
             }
         ]
