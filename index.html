@@ -947,27 +947,40 @@ function stripHtml(html) {
 }
 
 // X投稿用テキストを生成（140字以内）
+// XはURLを実際の長さに関係なく常に23文字としてカウントする
+const APP_URL  = 'https://szk34.github.io/hunger-creative/';
+const URL_COST = 23; // Xのt.co短縮後の固定文字数
+
+function twitterLength(text) {
+    // URLを23文字として換算した実効文字数を返す
+    const urlPattern = /https?:\/\/\S+/g;
+    const withoutUrls = text.replace(urlPattern, '');
+    const urlCount = (text.match(urlPattern) || []).length;
+    return [...withoutUrls].length + urlCount * URL_COST;
+}
+
 function buildTweetText(item) {
-    const tag   = item.tag;
-    const title = item.title;
-    const step1 = stripHtml(item.steps[0]);
+    const tag     = item.tag;
+    const title   = item.title;
+    const step1   = stripHtml(item.steps[0]);
     const hashtag = '#HungerCreative';
+    const url     = APP_URL;
 
     // フル版を構築してみる
-    const full = `【${tag}】${title}\n${step1}\n${hashtag}`;
-    if ([...full].length <= 140) return full;
+    const full = `【${tag}】${title}\n${step1}\n${hashtag}\n${url}`;
+    if (twitterLength(full) <= 140) return full;
 
     // step1を短縮して収める
-    const base = `【${tag}】${title}\n`;
-    const suffix = `\n${hashtag}`;
-    const budget = 140 - [...base].length - [...suffix].length - 1; // -1 for「…」
+    const base   = `【${tag}】${title}\n`;
+    const suffix = `\n${hashtag}\n${url}`;
+    const budget = 140 - twitterLength(base) - twitterLength(suffix) - 1; // -1 for「…」
     const trimmed = [...step1].slice(0, budget).join('') + '…';
     return `${base}${trimmed}${suffix}`;
 }
 
 function updateCopyArea(item) {
     const text = buildTweetText(item);
-    const len  = [...text].length;
+    const len  = twitterLength(text); // X換算の文字数で表示
 
     document.getElementById('copy-preview').textContent = text;
 
